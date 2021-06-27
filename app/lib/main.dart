@@ -1,65 +1,16 @@
+import 'package:app/widgets/currency_fetch.dart';
 import 'package:async/async.dart';
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:html/parser.dart' show parse;
 import 'package:crypto_font_icons/crypto_font_icons.dart';
-
-const request = "https://api.hgbrasil.com/finance?format=json&key=80f27c39";
-List<String> urls = [
-  "USD-https://cex.io/api/ticker/LTC/USD",
-  "EUR-https://cex.io/api/ticker/LTC/EUR"
-];
-
-List<String> scrappingUrls = [
-  "NGN_USD-https://www.xe.com/currencyconverter/convert/?Amount=1&From=USD&To=NGN",
-  "CUP_USD-https://www.xe.com/currencyconverter/convert/?Amount=1&From=USD&To=CUP",
-  "CHF_USD-https://www.xe.com/currencyconverter/convert/?Amount=1&From=USD&To=CHF"
-];
+//import 'package:app/widgets/drop_elegent.dart';
 
 void main() {
   runApp(MaterialApp(
     home: Home(),
-    theme: ThemeData(hintColor: Colors.amber, primaryColor: Colors.white),
+    theme: ThemeData(hintColor: Colors.white, primaryColor: Colors.white),
   ));
 }
 
-Future<List> getCurrencyUsdRate(String currency, String url) async {
-  final response = await http.get(url);
-  var NngUsd = double.parse(parse(response.body)
-      .getElementsByClassName("result__BigRate-sc-1bsijpp-1 iGrAod")[0]
-      .innerHtml
-      .split("<")[0]);
-  return [currency, NngUsd];
-}
-
-Future<List> getCurrencyInfo(String currency, String url) async {
-  final response = await http.get(url);
-  var price = double.parse(json.decode(response.body)["last"]);
-  return [currency, price];
-}
-
-Future<Map> getData() async {
-  List<Future> futures = [];
-  urls.asMap().forEach((key, url) {
-    var currencyUrl = url.split("-");
-    futures.add(getCurrencyInfo(currencyUrl[0], currencyUrl[1]));
-  });
-
-  scrappingUrls.asMap().forEach((key, url) {
-    var currencyUrl = url.split("-");
-    futures.add(getCurrencyUsdRate(currencyUrl[0], currencyUrl[1]));
-  });
-
-  final results = await Future.wait(futures);
-  results.asMap().forEach((key, value) {
-    print(value);
-  });
-
-  final ltc_conversion_rate =
-      Map.fromIterable(results, key: (v) => v[0], value: (v) => v[1]);
-  return ltc_conversion_rate;
-}
 
 class Home extends StatefulWidget {
   @override
@@ -175,16 +126,15 @@ class _HomeState extends State<Home> {
     ngnController.text = (dollar * ngn_usd).toStringAsFixed(2);
     cupController.text = (dollar * cup_usd).toStringAsFixed(2);
   }
-
+  Icon icon = new Icon(
+    Icons.search,
+    color: Colors.white,
+  );
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        title: Text("Converter"),
-        backgroundColor: Colors.amber,
-        centerTitle: true,
-      ),
+      appBar: buildAppBar(context),
       body: FutureBuilder(
           future: getData(),
           //snapshot of the context/getData
@@ -195,7 +145,7 @@ class _HomeState extends State<Home> {
                 return Center(
                     child: Text(
                   "Loading...",
-                  style: TextStyle(color: Colors.amber, fontSize: 25.0),
+                  style: TextStyle(color: Colors.white, fontSize: 25.0),
                   textAlign: TextAlign.center,
                 ));
               default:
@@ -203,7 +153,7 @@ class _HomeState extends State<Home> {
                   return Center(
                       child: Text(
                     "Error :(",
-                    style: TextStyle(color: Colors.amber, fontSize: 25.0),
+                    style: TextStyle(color: Colors.white, fontSize: 25.0),
                     textAlign: TextAlign.center,
                   ));
                 } else {
@@ -218,7 +168,7 @@ class _HomeState extends State<Home> {
                       child: Column(
                     children: <Widget>[
                       Icon(CryptoFontIcons.LTC,
-                          size: 150.0, color: Colors.amber),
+                          size: 150.0, color: Colors.white),
                       Padding(
                         padding: const EdgeInsets.all(1.0),
                         child: buildTextField(
@@ -261,7 +211,47 @@ class _HomeState extends State<Home> {
           }),
     );
   }
+   Widget appBarTitle = new Text(
+    "Search Example",
+    style: new TextStyle(color: Colors.white),
+  );
+  final TextEditingController _controller = new TextEditingController();
+
+  Widget buildAppBar(BuildContext context) {
+    return new AppBar(centerTitle: true, title: appBarTitle, actions: <Widget>[
+      new IconButton(
+        icon: icon,
+        onPressed: () {
+          setState(() {
+            if (this.icon.icon == Icons.search) {
+              this.icon = new Icon(
+                Icons.close,
+                color: Colors.white,
+              );
+              this.appBarTitle = new TextField(
+                controller: _controller,
+                style: new TextStyle(
+                  color: Colors.white,
+                ),
+                decoration: new InputDecoration(
+                    prefixIcon: new Icon(Icons.search, color: Colors.white),
+                    hintText: "Search...",
+                    hintStyle: new TextStyle(color: Colors.white)),
+                // onChanged: searchOperation,
+              );
+              // _handleSearchStart();
+            } else {
+              // _handleSearchEnd();
+            }
+          });
+        },
+      ),
+    ]);
+  }
+
 }
+
+
 
 Widget buildTextField(
     String label, String prefix, TextEditingController c, Function f) {
@@ -269,10 +259,10 @@ Widget buildTextField(
     controller: c,
     decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: Colors.amber),
+        labelStyle: TextStyle(color: Colors.white),
         border: OutlineInputBorder(),
         prefixText: prefix),
-    style: TextStyle(color: Colors.amber, fontSize: 25.0),
+    style: TextStyle(color: Colors.white, fontSize: 25.0),
     onChanged: f,
     keyboardType: TextInputType.numberWithOptions(decimal: true),
   );

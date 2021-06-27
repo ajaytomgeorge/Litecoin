@@ -1,4 +1,4 @@
-package com.example.app
+package com.celestialcrypto.litecoinconverter
 
 import io.flutter.embedding.android.FlutterActivity
 
